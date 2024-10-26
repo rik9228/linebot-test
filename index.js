@@ -24,6 +24,9 @@ function handleEvent(event) {
 		return Promise.resolve(null);
 	}
 
+	console.log(JSON.stringify(event));
+	console.log("--------------------");
+
 	return client.replyMessage(event.replyToken, {
 		type: "text",
 		text: event.message.text,
