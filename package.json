@@ -1,0 +1,17 @@
+{
+  "name": "linebot-test",
+  "version": "1.0.0",
+   "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@line/bot-sdk": "^9.4.2",
+    "express": "^4.21.1"
+  }
+}
