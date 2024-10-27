@@ -1,10 +1,12 @@
 import crypto from "crypto";
 import {
-	Client,
 	type TemplateMessage,
 	type TextMessage,
+	messagingApi,
 	middleware,
 } from "@line/bot-sdk";
+
+const { MessagingApiClient } = messagingApi;
 
 import dotenv from "dotenv";
 import express from "express";
@@ -55,7 +57,7 @@ async function handleEvent(event: MicroCMSWebhookEvent) {
 		throw new Error("署名認証エラー");
 	}
 
-	console.log('signature', signature);
+	console.log("signature", signature);
 
 	// リクエストボディからコンテンツIDとコンテンツの内容を取得
 	const data = event.body;
@@ -100,8 +102,14 @@ async function handleEvent(event: MicroCMSWebhookEvent) {
 
 	// LINE Messaging APIにリクエスト
 	try {
-		const client = new Client(config);
-		await client.pushMessage(GROUP_ID, obj);
+		const client = new MessagingApiClient(config);
+		client.pushMessage({
+			to: GROUP_ID,
+			messages: [
+				{ type: "text", text: "hello world1" },
+				{ type: "text", text: "hello world2" },
+			],
+		});
 	} catch (e) {
 		console.error(e);
 		return 500;
