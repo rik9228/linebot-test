@@ -55,6 +55,8 @@ async function handleEvent(event: MicroCMSWebhookEvent) {
 		throw new Error("署名認証エラー");
 	}
 
+	console.log('signature', signature);
+
 	// リクエストボディからコンテンツIDとコンテンツの内容を取得
 	const data = event.body;
 	const { id, contents } = JSON.parse(data);
