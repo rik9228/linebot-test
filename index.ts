@@ -6,10 +6,6 @@ import express from "express";
 
 dotenv.config();
 
-const config = {
-	channelSecret: process.env.CHANNEL_ACCESS_TOKEN ?? "",
-};
-
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -25,11 +21,10 @@ app.use(express.json());
 /**
  * microCMSからのWebhookを処理するエンドポイント
  */ app.post("/webhook", async (req, res) => {
-	// if (!req.headers["x-line-signature"]) {
-	// 	console.error("X-Line-Signatureヘッダーがありません");
-	// 	return res.status(400).send("署名がありません");
-	// }
 
+	/**
+	 * 署名を検証しないといけないらしい（？）
+	 */
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
 
@@ -40,8 +35,6 @@ app.use(express.json());
 		// 署名が有効な場合、Webhookの内容をログに出力
 		console.log("有効なWebhookを受信しました:");
 		console.log(JSON.stringify(req.body, null, 2));
-
-		console.log('process.env.CHANNEL_ACCESS_TOKEN', process.env.CHANNEL_ACCESS_TOKEN);
 
 		// LINE Messaging APIにリクエスト
 		try {
