@@ -14,17 +14,6 @@ import {
 import dotenv from "dotenv";
 import express from "express";
 
-// interface MicroCMSWebhookEvent {
-// 	/** リクエストヘッダー */
-// 	headers: {
-// 		/** microCMSの署名 */
-// 		"x-microcms-signature": string;
-// 		[key: string]: string;
-// 	};
-// 	/** リクエストボディ（JSON文字列） */
-// 	body: string;
-// }
-
 dotenv.config();
 
 const config = {
@@ -34,12 +23,24 @@ const config = {
 const PORT = process.env.PORT || 3000;
 const app = express();
 
+// デバッグ用ミドルウェア
+app.use((req, res, next) => {
+	console.log("リクエストヘッダー:", req.headers);
+	next();
+});
+
 // JSONボディの解析を有効化
 app.use(express.json());
 
 /**
  * microCMSからのWebhookを処理するエンドポイント
- */ app.post("/webhook", middleware(config), async (req, res) => {
+ */ app.post("/webhook", async (req, res, next) => {
+	if (!req.headers["x-line-signature"]) {
+		console.error("X-Line-Signatureヘッダーがありません");
+		return res.status(400).send("署名がありません");
+	}
+	middleware(config)(req, res, next);
+
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
 
