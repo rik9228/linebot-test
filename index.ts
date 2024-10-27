@@ -1,13 +1,13 @@
 import crypto from "crypto";
-// import {
-// 	LINE_SIGNATURE_HTTP_HEADER_NAME,
-// 	type TemplateMessage,
-// 	type TextMessage,
-// 	WebhookEvent,
-// 	messagingApi,
-// 	middleware,
-// 	validateSignature,
-// } from "@line/bot-sdk";
+import {
+	LINE_SIGNATURE_HTTP_HEADER_NAME,
+	type TemplateMessage,
+	type TextMessage,
+	WebhookEvent,
+	messagingApi,
+	middleware,
+	validateSignature,
+} from "@line/bot-sdk";
 
 // const { MessagingApiClient } = messagingApi;
 
@@ -28,8 +28,7 @@ import express from "express";
 dotenv.config();
 
 const config = {
-	channelSecret: process.env.CHANNEL_SECRET ?? "",
-	channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN ?? "",
+	channelSecret: process.env.CHANNEL_ACCESS_TOKEN ?? "",
 };
 
 const PORT = process.env.PORT || 3000;
@@ -40,8 +39,7 @@ app.use(express.json());
 
 /**
  * microCMSからのWebhookを処理するエンドポイント
- */
-app.post("/", (req, res) => {
+ */ app.post("/", middleware(config), async (req, res) => {
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
 
@@ -52,7 +50,32 @@ app.post("/", (req, res) => {
 		// 署名が有効な場合、Webhookの内容をログに出力
 		console.log("有効なWebhookを受信しました:");
 		console.log(JSON.stringify(req.body, null, 2));
-		res.sendStatus(200);
+
+		// LINE Messaging APIにリクエスト
+		try {
+			const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
+				},
+				body: JSON.stringify({
+					to: "C64906dbc94e6eee18e9341ad28491b89",
+					messages: [
+						{
+							type: "text",
+							text: `こんにちは ${new Date()}`,
+						},
+					],
+				}),
+			});
+			return res.json();
+		} catch (e) {
+			console.error(e);
+			return 500;
+		}
+
+		// res.sendStatus(200);
 	} else {
 		// 署名が無効な場合、エラーメッセージをログに出力
 		console.error("無効な署名です。不正なリクエストの可能性があります。");
