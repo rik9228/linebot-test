@@ -14,16 +14,16 @@ const { MessagingApiClient } = messagingApi;
 import dotenv from "dotenv";
 import express from "express";
 
-interface MicroCMSWebhookEvent {
-	/** リクエストヘッダー */
-	headers: {
-		/** microCMSの署名 */
-		"x-microcms-signature": string;
-		[key: string]: string;
-	};
-	/** リクエストボディ（JSON文字列） */
-	body: string;
-}
+// interface MicroCMSWebhookEvent {
+// 	/** リクエストヘッダー */
+// 	headers: {
+// 		/** microCMSの署名 */
+// 		"x-microcms-signature": string;
+// 		[key: string]: string;
+// 	};
+// 	/** リクエストボディ（JSON文字列） */
+// 	body: string;
+// }
 
 dotenv.config();
 
@@ -36,29 +36,26 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 app.post("/", middleware(config), (req, res) => {
-	Promise.all(req.body.events.map(handleEvent)).then((result) =>
-		res.json(result),
-	);
+	Promise.all(req.body.events.map(handler)).then((result) => res.json(result));
 });
 
-// biome-ignore lint:
-async function handleEvent(event: any) {
-	// LINEからのリクエストの署名検証
-	const signature = event.headers[LINE_SIGNATURE_HTTP_HEADER_NAME];
+// biome-ignore lint: reason
+export const handler = async (event: any) => {
+	// microCMSからのリクエストかを検証
+	const signature = event.headers["x-microcms-signature"];
+	const expectedSignature = crypto
+		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
+		.update(event.body)
+		.digest("hex");
+
 	if (
-		!validateSignature(
-			event.body ?? {},
-			process.env.CHANNEL_SECRET ?? "",
-			signature ?? "",
+		!crypto.timingSafeEqual(
+			Buffer.from(signature),
+			Buffer.from(expectedSignature),
 		)
 	) {
-		return {
-			statusCode: 403,
-			body: "Invalid signature",
-		};
+		throw new Error("署名認証エラー");
 	}
-
-	console.log("signature", signature);
 
 	// リクエストボディからコンテンツIDとコンテンツの内容を取得
 	const data = event.body;
@@ -71,48 +68,50 @@ async function handleEvent(event: any) {
 	// 公開したコンテンツの情報を取得
 	const { title, eyecatch, description } = contents.new.publishValue;
 
-	const SITE_URL = "https://motivation-blog.pages.dev/posts";
-
 	// Messaging APIにリクエストする際のメッセージオブジェクトに整形
-	const obj: (TextMessage | TemplateMessage)[] = [
-		{
-			type: "text",
-			text: "＼ ブログを更新しました ／",
-		},
-		{
-			type: "template",
-			altText: "ブログを更新しました",
-			template: {
-				type: "buttons",
-				thumbnailImageUrl: eyecatch.url,
-				imageSize: "contain",
-				title: title,
-				text: description,
-				actions: [
-					{
-						type: "uri",
-						label: "詳しく見る",
-						uri: `${SITE_URL}/${id}`,
-					},
-				],
+	const obj = {
+		messages: [
+			{
+				type: "text",
+				text: "＼ ブログを更新しました ／",
 			},
-		},
-	];
-
-	const GROUP_ID = "C64906dbc94e6eee18e9341ad28491b89";
+			{
+				type: "template",
+				altText: "ブログを更新しました",
+				template: {
+					type: "buttons",
+					thumbnailImageUrl: eyecatch.url,
+					imageSize: "contain",
+					title: title,
+					text: description,
+					actions: [
+						{
+							type: "uri",
+							label: "詳しく見る",
+							uri: `https://example.com/blogs/${id}`,
+						},
+					],
+				},
+			},
+		],
+	};
 
 	// LINE Messaging APIにリクエスト
 	try {
-		const client = new MessagingApiClient(config);
-		client.pushMessage({
-			to: GROUP_ID,
-			messages: [
-				{ type: "text", text: "hello world1" },
-				{ type: "text", text: "hello world2" },
-			],
+		const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
+			},
+			body: JSON.stringify({
+				type: "text",
+				text: "＼ ブログを更新しました ／",
+			}),
 		});
+		return res.json();
 	} catch (e) {
 		console.error(e);
 		return 500;
 	}
-}
+};
