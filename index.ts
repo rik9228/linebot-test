@@ -39,6 +39,10 @@ app.post("/", middleware(config), (req, res) => {
 	Promise.all(req.body.events.map(handler)).then((result) => res.json(result));
 });
 
+app.listen(PORT, () => {
+  console.log(`サーバーがポート${PORT}で起動しました`);
+});
+
 // biome-ignore lint: reason
 const handler = async (event: any) => {
 	console.log("通りました");
