@@ -35,89 +35,50 @@ const config = {
 const PORT = process.env.PORT || 3000;
 const app = express();
 
+// JSONボディの解析を有効化
+app.use(express.json());
+
+/**
+ * microCMSからのWebhookを処理するエンドポイント
+ */
 app.post("/", (req, res) => {
-	Promise.all(req.body.events.map(handler)).then((result) => res.json(result));
+	const signature = req.headers["x-microcms-signature"] as string;
+	const body = JSON.stringify(req.body);
+
+	// 署名の検証
+	const isValid = verifySignature(signature, body);
+
+	if (isValid) {
+		// 署名が有効な場合、Webhookの内容をログに出力
+		console.log("有効なWebhookを受信しました:");
+		console.log(JSON.stringify(req.body, null, 2));
+		res.sendStatus(200);
+	} else {
+		// 署名が無効な場合、エラーメッセージをログに出力
+		console.error("無効な署名です。不正なリクエストの可能性があります。");
+		res.sendStatus(200); // 要件に従い、エラー時も200を返す
+	}
 });
 
+/**
+ * 署名を検証する関数
+ * @param signature リクエストヘッダーの署名
+ * @param body リクエストボディ
+ * @returns 署名が有効な場合はtrue、そうでない場合はfalse
+ */
+function verifySignature(signature: string, body: string): boolean {
+	const expectedSignature = crypto
+		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
+		.update(body)
+		.digest("hex");
+
+	return crypto.timingSafeEqual(
+		Buffer.from(signature),
+		Buffer.from(expectedSignature),
+	);
+}
+
+// サーバーの起動
 app.listen(PORT, () => {
 	console.log(`サーバーがポート${PORT}で起動しました`);
 });
-
-// biome-ignore lint: reason
-const handler = async (event: any) => {
-	// microCMSからのリクエストかを検証
-	const signature = event.headers["x-microcms-signature"];
-	const expectedSignature = crypto
-		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
-		.update(event.body)
-		.digest("hex");
-
-	if (
-		!crypto.timingSafeEqual(
-			Buffer.from(signature),
-			Buffer.from(expectedSignature),
-		)
-	) {
-		throw new Error("署名認証エラー");
-	}
-
-	console.log("通りました");
-
-	// // リクエストボディからコンテンツIDとコンテンツの内容を取得
-	// const data = event.body;
-	// const { id, contents } = JSON.parse(data);
-
-	// // 更新の場合は処理を終了
-	// const isUpdated = contents.old !== null;
-	// if (isUpdated) return 200;
-
-	// // 公開したコンテンツの情報を取得
-	// const { title, eyecatch, description } = contents.new.publishValue;
-
-	// // Messaging APIにリクエストする際のメッセージオブジェクトに整形
-	// const obj = {
-	// 	messages: [
-	// 		{
-	// 			type: "text",
-	// 			text: "＼ ブログを更新しました ／",
-	// 		},
-	// 		{
-	// 			type: "template",
-	// 			altText: "ブログを更新しました",
-	// 			template: {
-	// 				type: "buttons",
-	// 				thumbnailImageUrl: eyecatch.url,
-	// 				imageSize: "contain",
-	// 				title: title,
-	// 				text: description,
-	// 				actions: [
-	// 					{
-	// 						type: "uri",
-	// 						label: "詳しく見る",
-	// 						uri: `https://example.com/blogs/${id}`,
-	// 					},
-	// 				],
-	// 			},
-	// 		},
-	// 	],
-	// };
-
-	// LINE Messaging APIにリクエスト
-	// try {
-	// 	const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
-	// 		method: "POST",
-	// 		headers: {
-	// 			"Content-Type": "application/json",
-	// 			Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
-	// 		},
-	// 		body: JSON.stringify({
-	// 			type: "text",
-	// 			text: "＼ ブログを更新しました ／",
-	// 		}),
-	// 	});
-	// 	return res.json();
-	// } catch (e) {
-	// 	console.error(e);
-	// 	return 500;
-	// }
-};
