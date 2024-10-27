@@ -1,14 +1,4 @@
 import crypto from "crypto";
-import {
-	LINE_SIGNATURE_HTTP_HEADER_NAME,
-	type TemplateMessage,
-	type TextMessage,
-	WebhookEvent,
-	messagingApi,
-	middleware,
-	validateSignature,
-} from "@line/bot-sdk";
-
 // const { MessagingApiClient } = messagingApi;
 
 import dotenv from "dotenv";
@@ -34,12 +24,11 @@ app.use(express.json());
 
 /**
  * microCMSからのWebhookを処理するエンドポイント
- */ app.post("/webhook", async (req, res, next) => {
+ */ app.post("/webhook", async (req, res) => {
 	if (!req.headers["x-line-signature"]) {
 		console.error("X-Line-Signatureヘッダーがありません");
 		return res.status(400).send("署名がありません");
 	}
-	middleware(config)(req, res, next);
 
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
@@ -54,7 +43,7 @@ app.use(express.json());
 
 		// LINE Messaging APIにリクエスト
 		try {
-			const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
+			const res = await fetch("https://api.line.me/v2/bot/message/push", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
