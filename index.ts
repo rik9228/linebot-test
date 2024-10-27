@@ -41,7 +41,7 @@ app.use(express.json());
 		console.log("有効なWebhookを受信しました:");
 		console.log(JSON.stringify(req.body, null, 2));
 
-		console.log('process.env.CHANEL_ACCESS_TOKEN', process.env.CHANEL_ACCESS_TOKEN);
+		console.log('process.env.CHANNEL_ACCESS_TOKEN', process.env.CHANNEL_ACCESS_TOKEN);
 
 		// LINE Messaging APIにリクエスト
 		try {
@@ -49,7 +49,7 @@ app.use(express.json());
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
+					Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN ?? ""}`,
 				},
 				body: JSON.stringify({
 					to: "C64906dbc94e6eee18e9341ad28491b89",
