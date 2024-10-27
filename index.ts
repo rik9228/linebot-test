@@ -1,15 +1,15 @@
 import crypto from "crypto";
-import {
-	LINE_SIGNATURE_HTTP_HEADER_NAME,
-	type TemplateMessage,
-	type TextMessage,
-	WebhookEvent,
-	messagingApi,
-	middleware,
-	validateSignature,
-} from "@line/bot-sdk";
+// import {
+// 	LINE_SIGNATURE_HTTP_HEADER_NAME,
+// 	type TemplateMessage,
+// 	type TextMessage,
+// 	WebhookEvent,
+// 	messagingApi,
+// 	middleware,
+// 	validateSignature,
+// } from "@line/bot-sdk";
 
-const { MessagingApiClient } = messagingApi;
+// const { MessagingApiClient } = messagingApi;
 
 import dotenv from "dotenv";
 import express from "express";
@@ -35,7 +35,7 @@ const config = {
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-app.post("/", middleware(config), (req, res) => {
+app.post("/", (req, res) => {
 	Promise.all(req.body.events.map(handler)).then((result) => res.json(result));
 });
 
