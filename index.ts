@@ -1,9 +1,12 @@
 import crypto from "crypto";
 import {
+	LINE_SIGNATURE_HTTP_HEADER_NAME,
 	type TemplateMessage,
 	type TextMessage,
+	WebhookEvent,
 	messagingApi,
 	middleware,
+	validateSignature,
 } from "@line/bot-sdk";
 
 const { MessagingApiClient } = messagingApi;
@@ -38,31 +41,21 @@ app.post("/", middleware(config), (req, res) => {
 	);
 });
 
-/**
- * 署名の検証
- */
-app.post("/webhook", middleware(config), (req, res) => {
-	req.body.events; // webhook event objects from LINE Platform
-	req.body.destination; // user ID of the bot
-});
-
-app.listen(PORT);
-
-async function handleEvent(event: MicroCMSWebhookEvent) {
-	// microCMSからのリクエストかを検証
-	const signature = event.headers["x-microcms-signature"];
-	const expectedSignature = crypto
-		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
-		.update(event.body)
-		.digest("hex");
-
+// biome-ignore lint:
+async function handleEvent(event: any) {
+	// LINEからのリクエストの署名検証
+	const signature = event.headers[LINE_SIGNATURE_HTTP_HEADER_NAME];
 	if (
-		!crypto.timingSafeEqual(
-			Buffer.from(signature),
-			Buffer.from(expectedSignature),
+		!validateSignature(
+			event.body ?? {},
+			process.env.CHANNEL_SECRET ?? "",
+			signature ?? "",
 		)
 	) {
-		throw new Error("署名認証エラー");
+		return {
+			statusCode: 403,
+			body: "Invalid signature",
+		};
 	}
 
 	console.log("signature", signature);
