@@ -40,28 +40,28 @@ app.post("/", middleware(config), (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`サーバーがポート${PORT}で起動しました`);
+	console.log(`サーバーがポート${PORT}で起動しました`);
 });
 
 // biome-ignore lint: reason
 const handler = async (event: any) => {
+	// microCMSからのリクエストかを検証
+	const signature = event.headers["x-microcms-signature"];
+	const expectedSignature = crypto
+		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
+		.update(event.body)
+		.digest("hex");
+
+	if (
+		!crypto.timingSafeEqual(
+			Buffer.from(signature),
+			Buffer.from(expectedSignature),
+		)
+	) {
+		throw new Error("署名認証エラー");
+	}
+
 	console.log("通りました");
-
-	// // microCMSからのリクエストかを検証
-	// const signature = event.headers["x-microcms-signature"];
-	// const expectedSignature = crypto
-	// 	.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
-	// 	.update(event.body)
-	// 	.digest("hex");
-
-	// if (
-	// 	!crypto.timingSafeEqual(
-	// 		Buffer.from(signature),
-	// 		Buffer.from(expectedSignature),
-	// 	)
-	// ) {
-	// 	throw new Error("署名認証エラー");
-	// }
 
 	// // リクエストボディからコンテンツIDとコンテンツの内容を取得
 	// const data = event.body;
