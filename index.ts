@@ -99,21 +99,21 @@ const handler = async (event: any) => {
 	// };
 
 	// LINE Messaging APIにリクエスト
-	try {
-		const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
-			},
-			body: JSON.stringify({
-				type: "text",
-				text: "＼ ブログを更新しました ／",
-			}),
-		});
-		return res.json();
-	} catch (e) {
-		console.error(e);
-		return 500;
-	}
+	// try {
+	// 	const res = await fetch("https://api.line.me/v2/bot/message/broadcast", {
+	// 		method: "POST",
+	// 		headers: {
+	// 			"Content-Type": "application/json",
+	// 			Authorization: `Bearer ${process.env.CHANEL_ACCESS_TOKEN ?? ""}`,
+	// 		},
+	// 		body: JSON.stringify({
+	// 			type: "text",
+	// 			text: "＼ ブログを更新しました ／",
+	// 		}),
+	// 	});
+	// 	return res.json();
+	// } catch (e) {
+	// 	console.error(e);
+	// 	return 500;
+	// }
 };
