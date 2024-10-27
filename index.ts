@@ -41,6 +41,8 @@ app.use(express.json());
 		console.log("有効なWebhookを受信しました:");
 		console.log(JSON.stringify(req.body, null, 2));
 
+		console.log('process.env.CHANEL_ACCESS_TOKEN', process.env.CHANEL_ACCESS_TOKEN);
+
 		// LINE Messaging APIにリクエスト
 		try {
 			const res = await fetch("https://api.line.me/v2/bot/message/push", {
