@@ -40,64 +40,63 @@ app.post("/", middleware(config), (req, res) => {
 });
 
 // biome-ignore lint: reason
-export const handler = async (event: any) => {
+const handler = async (event: any) => {
+	console.log("通りました");
 
-	console.log('通りました');
+	// // microCMSからのリクエストかを検証
+	// const signature = event.headers["x-microcms-signature"];
+	// const expectedSignature = crypto
+	// 	.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
+	// 	.update(event.body)
+	// 	.digest("hex");
 
-	// microCMSからのリクエストかを検証
-	const signature = event.headers["x-microcms-signature"];
-	const expectedSignature = crypto
-		.createHmac("sha256", process.env.MICROCMS_SECRET ?? "")
-		.update(event.body)
-		.digest("hex");
+	// if (
+	// 	!crypto.timingSafeEqual(
+	// 		Buffer.from(signature),
+	// 		Buffer.from(expectedSignature),
+	// 	)
+	// ) {
+	// 	throw new Error("署名認証エラー");
+	// }
 
-	if (
-		!crypto.timingSafeEqual(
-			Buffer.from(signature),
-			Buffer.from(expectedSignature),
-		)
-	) {
-		throw new Error("署名認証エラー");
-	}
+	// // リクエストボディからコンテンツIDとコンテンツの内容を取得
+	// const data = event.body;
+	// const { id, contents } = JSON.parse(data);
 
-	// リクエストボディからコンテンツIDとコンテンツの内容を取得
-	const data = event.body;
-	const { id, contents } = JSON.parse(data);
+	// // 更新の場合は処理を終了
+	// const isUpdated = contents.old !== null;
+	// if (isUpdated) return 200;
 
-	// 更新の場合は処理を終了
-	const isUpdated = contents.old !== null;
-	if (isUpdated) return 200;
+	// // 公開したコンテンツの情報を取得
+	// const { title, eyecatch, description } = contents.new.publishValue;
 
-	// 公開したコンテンツの情報を取得
-	const { title, eyecatch, description } = contents.new.publishValue;
-
-	// Messaging APIにリクエストする際のメッセージオブジェクトに整形
-	const obj = {
-		messages: [
-			{
-				type: "text",
-				text: "＼ ブログを更新しました ／",
-			},
-			{
-				type: "template",
-				altText: "ブログを更新しました",
-				template: {
-					type: "buttons",
-					thumbnailImageUrl: eyecatch.url,
-					imageSize: "contain",
-					title: title,
-					text: description,
-					actions: [
-						{
-							type: "uri",
-							label: "詳しく見る",
-							uri: `https://example.com/blogs/${id}`,
-						},
-					],
-				},
-			},
-		],
-	};
+	// // Messaging APIにリクエストする際のメッセージオブジェクトに整形
+	// const obj = {
+	// 	messages: [
+	// 		{
+	// 			type: "text",
+	// 			text: "＼ ブログを更新しました ／",
+	// 		},
+	// 		{
+	// 			type: "template",
+	// 			altText: "ブログを更新しました",
+	// 			template: {
+	// 				type: "buttons",
+	// 				thumbnailImageUrl: eyecatch.url,
+	// 				imageSize: "contain",
+	// 				title: title,
+	// 				text: description,
+	// 				actions: [
+	// 					{
+	// 						type: "uri",
+	// 						label: "詳しく見る",
+	// 						uri: `https://example.com/blogs/${id}`,
+	// 					},
+	// 				],
+	// 			},
+	// 		},
+	// 	],
+	// };
 
 	// LINE Messaging APIにリクエスト
 	try {
