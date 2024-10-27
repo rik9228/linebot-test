@@ -39,7 +39,7 @@ app.use(express.json());
 
 /**
  * microCMSからのWebhookを処理するエンドポイント
- */ app.post("/", middleware(config), async (req, res) => {
+ */ app.post("/webhook", middleware(config), async (req, res) => {
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
 
