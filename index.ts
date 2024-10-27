@@ -25,10 +25,10 @@ app.use(express.json());
 /**
  * microCMSからのWebhookを処理するエンドポイント
  */ app.post("/webhook", async (req, res) => {
-	if (!req.headers["x-line-signature"]) {
-		console.error("X-Line-Signatureヘッダーがありません");
-		return res.status(400).send("署名がありません");
-	}
+	// if (!req.headers["x-line-signature"]) {
+	// 	console.error("X-Line-Signatureヘッダーがありません");
+	// 	return res.status(400).send("署名がありません");
+	// }
 
 	const signature = req.headers["x-microcms-signature"] as string;
 	const body = JSON.stringify(req.body);
