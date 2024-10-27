@@ -59,6 +59,8 @@ app.use(express.json());
 					],
 				}),
 			});
+
+			console.log("res", res);
 			return res.json();
 		} catch (e) {
 			console.error(e);
