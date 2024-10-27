@@ -38,6 +38,14 @@ app.post("/", middleware(config), (req, res) => {
 	);
 });
 
+/**
+ * 署名の検証
+ */
+app.post("/webhook", middleware(config), (req, res) => {
+	req.body.events; // webhook event objects from LINE Platform
+	req.body.destination; // user ID of the bot
+});
+
 app.listen(PORT);
 
 async function handleEvent(event: MicroCMSWebhookEvent) {
