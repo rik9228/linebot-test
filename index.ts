@@ -41,6 +41,9 @@ app.post("/", middleware(config), (req, res) => {
 
 // biome-ignore lint: reason
 export const handler = async (event: any) => {
+
+	console.log('通りました');
+
 	// microCMSからのリクエストかを検証
 	const signature = event.headers["x-microcms-signature"];
 	const expectedSignature = crypto
