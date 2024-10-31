@@ -1,5 +1,3 @@
-import { messagingApi, middleware } from "@line/bot-sdk";
-const { MessagingApiClient } = messagingApi;
 import crypto from "crypto";
 
 import dotenv from "dotenv";
@@ -7,11 +5,6 @@ import express from "express";
 import type { MicroCMSWebhookBody } from "./type.js";
 
 dotenv.config();
-
-const config = {
-	channelSecret: process.env.CHANNEL_SECRET ?? "",
-	channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN ?? "",
-};
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -47,48 +40,6 @@ function App() {
 
 			// リクエストボディからコンテンツIDとコンテンツの内容を取得
 			const data = body;
-
-			console.log("data", data);
-
-			/**
-			 * zq1u4g7tt7a {
-					old: {
-						id: 'zq1u4g7tt7a',
-						status: [ 'PUBLISH' ],
-						draftKey: null,
-						publishValue: {
-							id: 'zq1u4g7tt7a',
-							createdAt: '2024-10-27T07:48:30.260Z',
-							updatedAt: '2024-10-31T12:25:42.215Z',
-							publishedAt: '2024-10-27T07:48:30.260Z',
-							revisedAt: '2024-10-31T12:25:42.215Z',
-							title: 'LINE通知テストfffefrjjjaaa',
-							content: '<p>テストですテストですテストです</p>',
-							author: [Array],
-							tags: [Array]
-						},
-						draftValue: null
-					},
-					new: {
-						id: 'zq1u4g7tt7a',
-						status: [ 'PUBLISH' ],
-						draftKey: null,
-						publishValue: {
-							id: 'zq1u4g7tt7a',
-							createdAt: '2024-10-27T07:48:30.260Z',
-							updatedAt: '2024-10-31T12:33:14.412Z',
-							publishedAt: '2024-10-27T07:48:30.260Z',
-							revisedAt: '2024-10-31T12:33:14.412Z',
-							title: 'LINE通知テストfffefrjjjaaassss',
-							content: '<p>テストですテストですテストです</p>',
-							author: [Array],
-							tags: [Array]
-						},
-						draftValue: null
-					}
-				}
-			 */
-
 			const { id, contents } = JSON.parse(data) as MicroCMSWebhookBody;
 
 			try {
